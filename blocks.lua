@@ -25,7 +25,7 @@ local blockDef = {
 
   ramp = {  north = 99, east = 102,  south = 105, west = 108 },
   rampsideway = {  north = 225, east = 228,  south = 231, west = 234 },
-  rampflipped = {  north = 111, east = 113,  south = 117, west = 120 },
+  rampflipped = {  north = 111, east = 114,  south = 117, west = 120 },
 
   ramphalfcorner = {  north = 123, east = 126,  south = 129, west = 132 },
   ramphalfcornerflipped = {  north = 147, east = 150,  south = 153, west = 156 },
