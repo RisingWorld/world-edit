@@ -1,6 +1,8 @@
 ---
 --- World Edit script
 ---
+VERSION = "v0.5.71";
+
 
 -- load dependencies
 include("i18n/i18n.lua");
@@ -21,71 +23,121 @@ function onEnable()
 	i18n.init(config);
 
 	-- The console already prepend the script name on every log output
-  print("Script v0.5.68 loaded.");
+  print("Script "..VERSION.." loaded.");
 end
 
 
+local function findTerrainData(globalPosition)
+	local chunkPos = StringUtils:stringToVector3f("0 0 0");
+	local blockPos = StringUtils:stringToVector3f("0 0 0");
+	local terrainId = 0;
 
-function getCoordsFromMarkEvent(e)
-	return e ~= false and {
-		e.startChunkpositionX,
-		e.startChunkpositionY,
-		e.startChunkpositionZ,
+	while terrainId == 0 do
+		ChunkUtils:getChunkAndBlockPosition(globalPosition, chunkPos, blockPos);
 
-		e.startBlockpositionX,
-		e.startBlockpositionY,
-		e.startBlockpositionZ,
+		print(chunkPos);
+		print(chunkPos.x);
+		print(chunkPos.y);
+		print(chunkPos.z);
 
-		e.endChunkpositionX,
-		e.endChunkpositionY,
-		e.endChunkpositionZ,
+		terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x, blockPos.y, blockPos.z);
 
-		e.endBlockpositionX,
-		e.endBlockpositionY,
-		e.endBlockpositionZ
-	} or nil;
-end
-
-
-
-function fillWith(c, texId, cleanup)
-	if cleanup then
-		removeAll(c, true);
+		if terrainId == 0 then
+			globalPosition.y = globalPosition.y - 1;
+		end
 	end
-	world:setTerrainDataInArea(c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12], texId);
-end
 
-function fillWithBlock(c, blockID)
-	world:setBlockDataInArea(c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12], blockID);
+	return terrainId;
 end
 
 
-function removeObjects(c)
-	world:removeAllObjectsInArea(c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12]);
+local function fillTerrainGlobal(s, e, terrainId)
+	local startChunkPos = StringUtils:stringToVector3f("0 0 0");
+	local startBlockPos = StringUtils:stringToVector3f("0 0 0");
+	local endChunkPos = StringUtils:stringToVector3f("0 0 0");
+	local endBlockPos = StringUtils:stringToVector3f("0 0 0");
+
+	ChunkUtils:getChunkAndBlockPosition(StringUtils:stringToVector3f(s.x.." "..s.y.." "..s.z), startChunkPos, startBlockPos);
+	ChunkUtils:getChunkAndBlockPosition(StringUtils:stringToVector3f(e.x.." "..e.y.." "..e.z), endChunkPos, endBlockPos);
+
+	world:setTerrainDataInArea(
+		startChunkPos.x, startChunkPos.y, startChunkPos.z,
+		startBlockPos.x, startBlockPos.y, startBlockPos.z,
+
+		endChunkPos.x, endChunkPos.y, endChunkPos.z,
+		endBlockPos.x, endBlockPos.y, endBlockPos.z,
+
+		terrainId
+	);
 end
 
-function removeConstr(c)
-	world:removeAllConstructionsInArea(c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12]);
+
+function fillTerrain(e, terrainId)
+	world:setTerrainDataInArea(
+		e.startChunkpositionX, e.startChunkpositionY, e.startChunkpositionZ,
+		e.startBlockpositionX, e.startBlockpositionY, e.startBlockpositionZ,
+
+		e.endChunkpositionX, e.endChunkpositionY, e.endChunkpositionZ,
+		e.endBlockpositionX, e.endBlockpositionY, e.endBlockpositionZ,
+
+		terrainId
+	);
 end
 
-function removeVeg(c)
-	world:removeAllVegetationsInArea(c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12]);
+
+function fillBlock(e, blockID)
+	world:setBlockDataInArea(
+		e.startChunkpositionX, e.startChunkpositionY, e.startChunkpositionZ,
+		e.startBlockpositionX, e.startBlockpositionY, e.startBlockpositionZ,
+
+		e.endChunkpositionX, e.endChunkpositionY, e.endChunkpositionZ,
+		e.endBlockpositionX, e.endBlockpositionY, e.endBlockpositionZ,
+
+		blockID
+	);
 end
 
-function removePlayerBlocks(c)
-	fillWithBlock(c, 0);
+
+function removeObjects(e)
+	world:removeAllObjectsInArea(
+		e.startChunkpositionX, e.startChunkpositionY, e.startChunkpositionZ,
+		e.startBlockpositionX, e.startBlockpositionY, e.startBlockpositionZ,
+
+		e.endChunkpositionX, e.endChunkpositionY, e.endChunkpositionZ,
+		e.endBlockpositionX, e.endBlockpositionY, e.endBlockpositionZ
+	);
 end
 
-function removeTerrainBlocks(c)
-	world:setTerrainDataInArea(c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],c[12], 0);
+
+function removeConstr(e)
+	world:removeAllConstructionsInArea(
+		e.startChunkpositionX, e.startChunkpositionY, e.startChunkpositionZ,
+		e.startBlockpositionX, e.startBlockpositionY, e.startBlockpositionZ,
+
+		e.endChunkpositionX, e.endChunkpositionY, e.endChunkpositionZ,
+		e.endBlockpositionX, e.endBlockpositionY, e.endBlockpositionZ
+	);
 end
 
-function removeAll(c, clearTerrain)
-	removeObjects(c);
-	removeConstr(c);
-	removeVeg(c);
-	removePlayerBlocks(c);
-	if clearTerrain then
-		removeTerrainBlocks(c);
+
+function removeVeg(e)
+	world:removeAllVegetationsInArea(
+		e.startChunkpositionX, e.startChunkpositionY, e.startChunkpositionZ,
+		e.startBlockpositionX, e.startBlockpositionY, e.startBlockpositionZ,
+
+		e.endChunkpositionX, e.endChunkpositionY, e.endChunkpositionZ,
+		e.endBlockpositionX, e.endBlockpositionY, e.endBlockpositionZ
+	);
+end
+
+
+function removeAll(e, clearAll)
+	removeObjects(e);
+	removeConstr(e);
+	removeVeg(e);
+	fillBlock(e, 0);
+
+	if clearAll then
+		fillTerrain(e, 0);
 	end
 end

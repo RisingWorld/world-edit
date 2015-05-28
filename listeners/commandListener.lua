@@ -3,6 +3,16 @@ include("command-parser/parse-args.lua");
 
 
 local textureAliasMap = {
+  grass9 = -10,
+  grass8 = -9,
+  grass7 = -8,
+  grass6 = -7,
+  grass5 = -6,
+  grass4 = -5,
+  grass3 = -4,
+  grass2 = -3,
+  grass1 = -2,
+
   air = 0,
   dirt = 1,
   grass = 2,
@@ -19,7 +29,15 @@ local textureAliasMap = {
   dungeonwall = 13,
   dungeonfloor = 14,
   bonewall = 15,
-  hellstone = 16
+  hellstone = 16,
+  iron = -101,
+  copper = -102,
+  aluminium = -103,
+  silver = -104,
+  gold = -105,
+  tungsten = -106,
+  cobalt = -107,
+  mithril = -108
 };
 local fillAvailableArgs = table.keys(textureAliasMap);
 local clearAvailableArgs = {"obj","con","veg","all","abs"};
@@ -28,6 +46,24 @@ table.sort(fillAvailableArgs, function (a, b)
   return textureAliasMap[a] < textureAliasMap[b];
 end);
 table.insert(fillAvailableArgs, "#id");
+
+
+local function setLabel(event, text)
+  local label = event.player:getAttribute("weStateLabel");
+
+  if text then
+    label:setText(text);
+    label:setVisible(true);
+  else
+    label:setText("");
+    label:setVisible(false);
+  end
+end
+
+
+local function weAbout(event)
+  event.player:sendTextMessage("[#FFFF00]World-Edit "..VERSION);
+end
 
 
 local function weHelp(event, args)
@@ -72,21 +108,6 @@ local function weHelp(event, args)
 end
 
 
-
-local function setLabel(event, text)
-  local label = event.player:getAttribute("weStateLabel");
-
-  if text then
-    label:setText(text);
-    label:setVisible(true);
-  else
-    label:setText("");
-    label:setVisible(false);
-  end
-end
-
-
-
 local function weSelect(event)
   event.player:enableMarkingSelector(function()
     --print("Area selection start");
@@ -112,23 +133,21 @@ local function weClear(event, args, flags)
 
   event.player:getMarkingSelectorStatus(function(markingEvent)
     if markingEvent ~= false then
-      local coords = getCoordsFromMarkEvent(markingEvent);
-
       if clearObjType == "obj" then
         --print("Clearing area of objects");
-        removeObjects(coords);
+        removeObjects(markingEvent);
       elseif clearObjType == "con" then
         --print("Clearing area of construction");
-        removeConstr(coords);
+        removeConstr(markingEvent);
       elseif clearObjType == "veg" then
         --print("Clearing area of vegetation");
-        removeVeg(coords);
+        removeVeg(markingEvent);
       elseif clearObjType == "all" then
         --print("Clearing area of all");
-        removeAll(coords, false);
+        removeAll(markingEvent, false);
       elseif clearObjType == "abs" then
         --print("Clearing area of absolutely everything");
-        removeAll(coords, true);
+        removeAll(markingEvent, true);
       else
         return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.use.args", table.concat(clearAvailableArgs, ", ")));
       end
@@ -150,21 +169,19 @@ local function wePlaceBlock(event, args, flags)
   local blockType = args[1] and string.lower(args[1]);
   local direction = args[3] and string.lower(args[3]) or "north";
   local orientation = args[4] and string.lower(args[4]) or "";
-  local blockId = args[2] and getBlockId(tonumber(args[2]), blockType, direction, orientation);
+  local blockId = args[2] and getBlockId(tonumber(args[2]) or 0, blockType, direction, orientation);
 
   if blockType and blockId then
 
-    if blockId < 21 then
+    if blockId < 21 and blockId ~= 0 then
       --print("Block id adjusted from "..blockId.." to 21");
       blockId = 21;
     end;
 
     event.player:getMarkingSelectorStatus(function(markingEvent)
       if markingEvent ~= false then
-        local coords = getCoordsFromMarkEvent(markingEvent);
-
         --print("Placing "..blockType.." in area with id "..blockId..(cleanup ~= nil and " with cleanup" or ""));
-        fillWithBlock(coords, blockId);
+        fillBlock(markingEvent, blockId);
 
         if not flags["p"] then
           event.player:disableMarkingSelector(function()
@@ -189,17 +206,19 @@ local function weFill(event, args, flags)
 
   if id then
 
-    if id < 0 or id > 16 then
-      --print("Terrain id adjusted from "..id.." to 0");
-      id = 0;
+    if not table.contains(textureAliasMap, id) then
+      print("Terrain id adjusted from "..id.." to "..textureAliasMap["air"]);
+      id = textureAliasMap["air"];
     end;
 
     event.player:getMarkingSelectorStatus(function(markingEvent)
       if markingEvent ~= false then
-        local coords = getCoordsFromMarkEvent(markingEvent);
-
         --print("Filling area with id "..id..(cleanup ~= nil and " with cleanup" or ""));
-        fillWith(coords, id, cleanup);
+        if cleanup then
+          removeAll(markingEvent);
+        end
+
+        fillTerrain(markingEvent, id);
 
         if not flags["p"] then
           event.player:disableMarkingSelector(function()
@@ -211,10 +230,11 @@ local function weFill(event, args, flags)
       end
     end);
   else
-    event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.use.args", table.concat(fillAvailableArgs, ", ")));
+    for k,line in pairs(string.wrap(i18n.t(event.player, "cmd.use.args", table.concat(fillAvailableArgs, ', ')), 80, 3)) do
+      event.player:sendTextMessage("[#FF0000]"..line);
+    end
   end
 end
-
 
 
 local function onPlayerCommand(event)
@@ -241,6 +261,8 @@ local function onPlayerCommand(event)
         if checkPlayerAccess(event.player, "fill") then weFill(event, table.slice(args, 3), flags); end;
       elseif cmd == "place" then
         if checkPlayerAccess(event.player, "place") then wePlaceBlock(event, table.slice(args, 3), flags); end;
+      elseif cmd == "about" then
+        if checkPlayerAccess(event.player, "about") then weAbout(event); end;
       else
         event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.unknown"));
       end
