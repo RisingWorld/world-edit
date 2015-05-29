@@ -99,8 +99,10 @@ local function weHelp(event, args)
     for k,line in pairs(string.wrap(i18n.t(event.player, "help.place.usage", "blocktype", table.concat(getBlockTypes(), ', ')), 80)) do
       event.player:sendTextMessage("[#FFFF00]"..line);
     end
+  elseif helpContext == "about" then
+    weAbout(event);
   else
-    event.player:sendTextMessage("[#33FF33]/we <help|select|cancel|clear|fill|place> [args]");
+    event.player:sendTextMessage("[#33FF33]/we <help|about|select|cancel|clear|fill|place> [args]");
     for k,line in pairs(string.wrap(i18n.t(event.player, "help.usage", "/we help fill"), 80)) do
       event.player:sendTextMessage("[#FFFF00]"..line);
     end
