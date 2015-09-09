@@ -141,6 +141,7 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 ## Contributors
 
 * LordFoobar (Yanick Rochon)
+* Yahgiggle (Deon Hamilton)
 * andyzee (Andy Zee)
 
 ### Translators

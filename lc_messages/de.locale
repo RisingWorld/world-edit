@@ -14,6 +14,8 @@ select.cancelled=Auswahl abgebrochen.
 help.usage=Gebe den Parameter fuer die Hilfe mit an. Bsp: %s
 help.select.usage=Markiere den Bereich zum bearbeiten.
 help.cancel.usage=Aktuelle Auswahl abbrechen.
-help.clear.usage=Bereinigen der Auswahl von [obj]ects, [con]structions, [veg]egations, [all], oder [abs]olutely everything.
+help.clear.usage=Bereinigen der Auswahl von [obj]ects, [con]structions, [veg]egations, [block], [all], oder [abs]olutely everything.
 help.fill.usage=Fuellt die Auswahl mit Erde oder Stein. Verwenden -c, um den Bereich zuerst zu löschen. Die Texturen sind verfügbar: %s
 help.place.usage=Fuellt die Auswahl mit Bloecken (die letzten beiden Parameter sind optional). %s sollte sein : %s
+help.plant.usage=Plant vegetation where [ranges] may be space-delimited list of numeric values or ranges from 1 to 41. Use -x and -z to set the size to cover in X and Z coordinates around you, or -r for a radius value. Use -c to specify the amount to plant in absolute or in percent (%%).
+help.plant.example=Ex: "/we plant 1 8..10 13..27 -r=20 -c=40%%" would plant shrubberies (1), and flowers (8 to 10, 13 to 27), filling a radius of 20 blocks at 40%%.

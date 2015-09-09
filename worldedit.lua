@@ -28,17 +28,12 @@ end
 
 
 local function findTerrainData(globalPosition)
-	local chunkPos = StringUtils:stringToVector3f("0 0 0");
-	local blockPos = StringUtils:stringToVector3f("0 0 0");
+	local chunkPos = Vector:createVector3i(0, 0, 0);
+	local blockPos = Vector:createVector3i(0, 0, 0);
 	local terrainId = 0;
 
 	while terrainId == 0 do
 		ChunkUtils:getChunkAndBlockPosition(globalPosition, chunkPos, blockPos);
-
-		print(chunkPos);
-		print(chunkPos.x);
-		print(chunkPos.y);
-		print(chunkPos.z);
 
 		terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x, blockPos.y, blockPos.z);
 
@@ -52,13 +47,14 @@ end
 
 
 local function fillTerrainGlobal(s, e, terrainId)
-	local startChunkPos = StringUtils:stringToVector3f("0 0 0");
-	local startBlockPos = StringUtils:stringToVector3f("0 0 0");
-	local endChunkPos = StringUtils:stringToVector3f("0 0 0");
-	local endBlockPos = StringUtils:stringToVector3f("0 0 0");
+	local startChunkPos = Vector:createVector3f(0.0, 0.0, 0.0);
+	local startBlockPos = Vector:createVector3f(0.0, 0.0, 0.0);
+	local endChunkPos = Vector:createVector3f(0.0, 0.0, 0.0);
+	local endBlockPos = Vector:createVector3f(0.0, 0.0, 0.0);
 
-	ChunkUtils:getChunkAndBlockPosition(StringUtils:stringToVector3f(s.x.." "..s.y.." "..s.z), startChunkPos, startBlockPos);
-	ChunkUtils:getChunkAndBlockPosition(StringUtils:stringToVector3f(e.x.." "..e.y.." "..e.z), endChunkPos, endBlockPos);
+	-- convert into chunk + block positions
+	ChunkUtils:getChunkAndBlockPosition(s, startChunkPos, startBlockPos);
+	ChunkUtils:getChunkAndBlockPosition(e, endChunkPos, endBlockPos);
 
 	world:setTerrainDataInArea(
 		startChunkPos.x, startChunkPos.y, startChunkPos.z,
@@ -69,6 +65,19 @@ local function fillTerrainGlobal(s, e, terrainId)
 
 		terrainId
 	);
+end
+
+
+function getWorldData(globalPosition)
+	local chunkPos = Vector:createVector3i(0, 0, 0);
+	local blockPos = Vector:createVector3i(0, 0, 0);
+
+	ChunkUtils:getChunkAndBlockPosition(globalPosition, chunkPos, blockPos);
+
+	return {
+		terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x, blockPos.y, blockPos.z),
+		block = getBlockTypeAndId(world:getBlockData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x, blockPos.y, blockPos.z))
+	};
 end
 
 

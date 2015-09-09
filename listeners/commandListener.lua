@@ -40,7 +40,7 @@ local textureAliasMap = {
   mithril = -108
 };
 local fillAvailableArgs = table.keys(textureAliasMap);
-local clearAvailableArgs = {"obj","con","veg","all","abs"};
+local clearAvailableArgs = {"obj","con","veg","block","all","abs"};
 
 table.sort(fillAvailableArgs, function (a, b)
   return textureAliasMap[a] < textureAliasMap[b];
@@ -72,40 +72,33 @@ local function weHelp(event, args)
   if helpContext == "select" then
     --print("Showing /we select help");
     event.player:sendTextMessage("[#33FF33]/we select");
-    for k,line in pairs(string.wrap(i18n.t(event.player, "help.select.usage"), 80)) do
-      event.player:sendTextMessage("[#FFFF00]"..line);
-    end
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.select.usage"));
   elseif helpContext == "cancel" then
     --print("Showing /we cancel help");
     event.player:sendTextMessage("[#33FF33]/we cancel");
-    for k,line in pairs(string.wrap(i18n.t(event.player, "help.cancel.usage"), 80)) do
-      event.player:sendTextMessage("[#FFFF00]"..line);
-    end
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.cancel.usage"));
   elseif helpContext == "clear" then
     --print("Showing /we clear help");
     event.player:sendTextMessage("[#33FF33]/we clear ["..table.concat(clearAvailableArgs, '|').."] [-p]");
-    for k,line in pairs(string.wrap(i18n.t(event.player, "help.clear.usage"), 80)) do
-      event.player:sendTextMessage("[#FFFF00]"..line);
-    end
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.clear.usage"));
   elseif helpContext == "fill" then
     --print("Showing /we fill help");
     event.player:sendTextMessage("[#33FF33]/we fill <texture> [-p]");
-    for k,line in pairs(string.wrap(i18n.t(event.player, "help.fill.usage", table.concat(fillAvailableArgs, ', ')), 80)) do
-      event.player:sendTextMessage("[#FFFF00]"..line);
-    end
+    event.player:sendTextMessage("[#33FF33]"..i18n.t(event.player, "help.fill.usage", table.concat(fillAvailableArgs, ', ')));
   elseif helpContext == "place" then
     --print("Showing /we place help");
     event.player:sendTextMessage("[#33FF33]/we place <blocktype> <id> [north|east|south|west] [sideway|flipped] [-p]");
-    for k,line in pairs(string.wrap(i18n.t(event.player, "help.place.usage", "blocktype", table.concat(getBlockTypes(), ', ')), 80)) do
-      event.player:sendTextMessage("[#FFFF00]"..line);
-    end
+    event.player:sendTextMessage("[#33FF33]"..i18n.t(event.player, "help.place.usage", "blocktype", table.concat(getBlockTypes(), ', ')));
+  elseif helpContext == "plant" then
+    --print("Showing /we place help");
+    event.player:sendTextMessage("[#33FF33]/we plant <ranges> [-x=?] [-z=?] [-r=?] [-c=?]");
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.plant.usage"));
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.plant.example"));
   elseif helpContext == "about" then
     weAbout(event);
   else
     event.player:sendTextMessage("[#33FF33]/we <help|about|select|cancel|clear|fill|place> [args]");
-    for k,line in pairs(string.wrap(i18n.t(event.player, "help.usage", "/we help fill"), 80)) do
-      event.player:sendTextMessage("[#FFFF00]"..line);
-    end
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.usage", "/we help fill"));
   end
 end
 
@@ -144,6 +137,9 @@ local function weClear(event, args, flags)
       elseif clearObjType == "veg" then
         --print("Clearing area of vegetation");
         removeVeg(markingEvent);
+      elseif clearObjType == "block" then
+        --print("Clearing area of Blocks");
+        fillBlock(markingEvent, 0);
       elseif clearObjType == "all" then
         --print("Clearing area of all");
         removeAll(markingEvent, false);
@@ -232,9 +228,7 @@ local function weFill(event, args, flags)
       end
     end);
   else
-    for k,line in pairs(string.wrap(i18n.t(event.player, "cmd.use.args", table.concat(fillAvailableArgs, ', ')), 80, 3)) do
-      event.player:sendTextMessage("[#FF0000]"..line);
-    end
+    event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.use.args", table.concat(fillAvailableArgs, ', ')));
   end
 end
 
