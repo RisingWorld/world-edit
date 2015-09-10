@@ -4,9 +4,6 @@
 [submodule "command-parser"]
 	path = command-parser
 	url = https://github.com/RisingWorld/command-parser
-[submodule "table-ext"]
-	path = table-ext
-	url = https://github.com/RisingWorld/table-ext
-[submodule "string-ext"]
-	path = string-ext
-	url = https://github.com/RisingWorld/string-ext
+[submodule "lua-ext"]
+	path = lua-ext
+	url = https://github.com/RisingWorld/lua-ext
