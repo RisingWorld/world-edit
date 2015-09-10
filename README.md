@@ -108,9 +108,9 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 
   Ex: `/we plant 29 -y=10 -c=50%` plant 5 trees (50% of 10) at random on a single straight line on the y-axis
 
-  Ex: `/we plant 29 -x=10 -y=10 -c=30` plant 30 trees at random on a rectangle area
+  Ex: `/we plant 29 -x=10 -y=10 -c=30` plant 30 trees at random in a rectangle area
 
-  Ex: `/we plant 2..4 6 7 28..31 -r=10 -c=30%` plant random trees in a rectangle filling 30% of the area
+  Ex: `/we plant 2..4 6 7 28..31 -r=10 -c=30%` plant random trees in a circle area filling 30% of it
 
 
 ### Textures
