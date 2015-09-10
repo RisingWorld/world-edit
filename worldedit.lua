@@ -1,14 +1,14 @@
 ---
 --- World Edit script
 ---
-VERSION = "v0.5.71";
+VERSION = "v0.5.85";
 
 
 -- load dependencies
 include("i18n/i18n.lua");
 include("security.lua");
-include("table-ext/table-ext.lua");
-include("string-ext/string-ext.lua");
+include("lua-ext/table-ext.lua");
+include("lua-ext/string-ext.lua");
 include("blocks.lua");
 include("listeners/playerListener.lua");
 include("listeners/commandListener.lua");
@@ -27,6 +27,55 @@ function onEnable()
 end
 
 
+---
+-- Find nearest floor terrain for the given global position as a Vector3f
+-- NOTE : 512 blocks high restricted when searching
+-- @param globalPosition Vector3f
+-- @return terrainGlobalPosition Vector3f, terrainId number
+--
+function findNearestTerrainFloor(globalPosition)
+	local chunkPos = Vector:createVector3i(0, 0, 0);
+	local blockPos = Vector:createVector3i(0, 0, 0);
+	local globalPos = Vector:createVector3f(globalPosition.x, globalPosition.y, globalPosition.z);
+	local increment = 5;
+	local precision = 0.05;
+	local maxHeight = 512;
+	local terrainId;
+
+	local moveUp = function ()
+		while terrainId ~= 0 and globalPos.y > globalPosition.y - maxHeight do
+			globalPos.y = globalPos.y + increment;
+			ChunkUtils:getChunkAndBlockPosition(globalPos, chunkPos, blockPos);
+			terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x - 2, blockPos.y - 2, blockPos.z - 2);
+		end
+	end
+	local moveDown = function ()
+		while terrainId == 0 and globalPos.y < globalPosition.y + maxHeight do
+			globalPos.y = globalPos.y - increment;
+			ChunkUtils:getChunkAndBlockPosition(globalPos, chunkPos, blockPos);
+			terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x - 2, blockPos.y - 2, blockPos.z - 2);
+		end
+	end
+
+	ChunkUtils:getChunkAndBlockPosition(globalPos, chunkPos, blockPos);
+	terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x - 2, blockPos.y - 2, blockPos.z - 2);
+
+	while (terrainId == 0 or increment > precision) and globalPos.y < globalPosition.y + maxHeight and globalPos.y > globalPosition.y - maxHeight do
+		if terrainId == 0 then
+			moveDown();
+		else
+			moveUp();
+		end
+
+		increment = increment / 2;
+	end
+
+	return globalPos, terrainId;
+end
+
+
+-- NOTE: NOT USED.... YET!
+-- also, this implementation is crap
 local function findTerrainData(globalPosition)
 	local chunkPos = Vector:createVector3i(0, 0, 0);
 	local blockPos = Vector:createVector3i(0, 0, 0);
@@ -45,7 +94,7 @@ local function findTerrainData(globalPosition)
 	return terrainId;
 end
 
-
+-- NOTE: NOT USED.... YET!
 local function fillTerrainGlobal(s, e, terrainId)
 	local startChunkPos = Vector:createVector3f(0.0, 0.0, 0.0);
 	local startBlockPos = Vector:createVector3f(0.0, 0.0, 0.0);
@@ -67,8 +116,8 @@ local function fillTerrainGlobal(s, e, terrainId)
 	);
 end
 
-
-function getWorldData(globalPosition)
+-- NOTE: NOT USED.... YET!
+local function getWorldData(globalPosition)
 	local chunkPos = Vector:createVector3i(0, 0, 0);
 	local blockPos = Vector:createVector3i(0, 0, 0);
 
@@ -104,6 +153,11 @@ function fillBlock(e, blockID)
 
 		blockID
 	);
+end
+
+
+function placeVegetation(x, y, z, a, id)
+	world:placeVegetation(x, y, z, a or math.random(0,360), id or 1);
 end
 
 

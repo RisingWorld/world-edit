@@ -198,6 +198,94 @@ local function wePlaceBlock(event, args, flags)
 end
 
 
+local function wePlant(event, args, flags)
+  local id;
+  local ids = {};
+  local count, percent = string.match(flags["c"] or "1", "(%d+)(%%?)");
+  local plantPos = event.player:getPosition();
+  local plantAngle;
+  local pos = Vector:createVector3f(0, 0, 0);
+  local terrainId;
+
+  count = tonumber(count);
+
+  if count == nil then
+    return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "c"));
+  end
+
+  -- build ids table of all the possible ids to use
+  for key,id in pairs(args) do
+    -- TODO : check for alias range
+
+    local a, b = string.match(id, "(%d+)..(%d+)");
+
+    if a and b then
+      a = math.max(tonumber(a) or 1, 1);
+      b = math.min(tonumber(b) or 1, 41);
+
+      for i = a, b do
+        table.insert(ids, i);
+      end
+    else
+      id = tonumber(id);
+
+      if id == nil then
+        return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "range"));
+      end
+
+      table.insert(ids, math.max(math.min(id, 41), 1));
+    end
+  end
+
+  -- we want a circle area
+  if flags["r"] then
+    local r = math.max(tonumber(flags["r"]) or 1, 1);
+
+    if percent == "%" then
+      count = (count / 100) * (math.pi * r * r);
+    end
+
+    for i = 1,count do
+      local angle = (math.random(0, 359000) / 1000) * math.pi / 180;
+
+      pos.x = plantPos.x + ((math.random(0, r * 10000) / 10000) * math.cos(angle));
+      pos.y = plantPos.y;
+      pos.z = plantPos.z + ((math.random(0, r * 10000) / 10000) * math.sin(angle));
+      plantAngle = math.random(0, 359000) / 1000;
+
+      id = ids[math.random(1, #ids)];
+      pos, terrainId = findNearestTerrainFloor(pos);
+
+      placeVegetation(pos.x, pos.y - (0.2 + (math.random(0, 20) / 100)), pos.z, plantAngle, id)
+    end
+
+  -- we want a rectangle area
+  else
+    local x = math.max((tonumber(flags["x"]) or 1) - 1, 0);
+    local z = math.max((tonumber(flags["z"]) or 1) - 1, 0);
+
+    if percent == "%" then
+      count = (count / 100) * (z > 1 and z * 2 or 1) * (x > 1 and x * 2 or 1);
+    end
+
+
+
+    for i = 1,count do
+      pos.x = plantPos.x + (math.random(-x * 10000, x * 10000) / 10000);
+      pos.y = plantPos.y;
+      pos.z = plantPos.z + (math.random(-z * 10000, z * 10000) / 10000);
+      plantAngle = math.random(0, 359000) / 1000;
+
+      id = ids[math.random(1, #ids)];
+      pos, terrainId = findNearestTerrainFloor(pos);
+
+      placeVegetation(pos.x, pos.y - (0.2 + (math.random(0, 20) / 100)), pos.z, plantAngle, id)
+    end
+
+  end
+end
+
+
 local function weFill(event, args, flags)
   local cleanup = flags["c"] or flags["clean"];
   local id = tonumber(args[1]) or textureAliasMap[string.lower(args[1] or "")];
@@ -257,6 +345,8 @@ local function onPlayerCommand(event)
         if checkPlayerAccess(event.player, "fill") then weFill(event, table.slice(args, 3), flags); end;
       elseif cmd == "place" then
         if checkPlayerAccess(event.player, "place") then wePlaceBlock(event, table.slice(args, 3), flags); end;
+      elseif cmd == "plant" then
+        if checkPlayerAccess(event.player, "plant") then wePlant(event, table.slice(args, 3), flags); end;
       elseif cmd == "about" then
         if checkPlayerAccess(event.player, "about") then weAbout(event); end;
       else

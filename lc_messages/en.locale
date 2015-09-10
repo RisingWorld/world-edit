@@ -5,6 +5,7 @@ error.restricted=You don't have admin rights on this server. Request Admin right
 
 cmd.no.selection=No selection
 cmd.missing.arg=Missing argument: %s
+cmd.invalid.arg=Invalid argument: %s
 cmd.unknown=Invalid command
 cmd.use.args=Use one of the following arguments: %s
 

@@ -5,6 +5,7 @@ error.restricted=Keine Berechtigung. Wende dich an einen Administrator oder verw
 
 cmd.no.selection=Kein Bereich markiert.
 cmd.missing.arg=Fehlender Parameter: %s
+cmd.invalid.arg=Ungültiges Parameter: %s
 cmd.unknown=Ungueltiger Befehl
 cmd.use.args=Benutze einen der folgenden Parameter: %s
 
