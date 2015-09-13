@@ -30,37 +30,39 @@ end
 ---
 -- Find nearest floor terrain for the given global position as a Vector3f
 -- NOTE : 512 blocks high restricted when searching
--- @param globalPosition Vector3f
+-- @param x number
+-- @param y number
+-- @param z number
 -- @return terrainGlobalPosition Vector3f, terrainId number
 --
-function findNearestTerrainFloor(globalPosition)
+function findNearestTerrainFloor(x, y, z)
 	local chunkPos = Vector:createVector3i(0, 0, 0);
 	local blockPos = Vector:createVector3i(0, 0, 0);
-	local globalPos = Vector:createVector3f(globalPosition.x, globalPosition.y, globalPosition.z);
+	local pos = Vector:createVector3f(x, y, z);
 	local increment = 5;
 	local precision = 0.05;
 	local maxHeight = 512;
 	local terrainId;
 
 	local moveUp = function ()
-		while terrainId ~= 0 and globalPos.y > globalPosition.y - maxHeight do
-			globalPos.y = globalPos.y + increment;
-			ChunkUtils:getChunkAndBlockPosition(globalPos, chunkPos, blockPos);
+		while terrainId ~= 0 and pos.y > y - maxHeight do
+			pos.y = pos.y + increment;
+			ChunkUtils:getChunkAndBlockPosition(pos, chunkPos, blockPos);
 			terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x - 2, blockPos.y - 2, blockPos.z - 2);
 		end
 	end
 	local moveDown = function ()
-		while terrainId == 0 and globalPos.y < globalPosition.y + maxHeight do
-			globalPos.y = globalPos.y - increment;
-			ChunkUtils:getChunkAndBlockPosition(globalPos, chunkPos, blockPos);
+		while terrainId == 0 and pos.y < y + maxHeight do
+			pos.y = pos.y - increment;
+			ChunkUtils:getChunkAndBlockPosition(pos, chunkPos, blockPos);
 			terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x - 2, blockPos.y - 2, blockPos.z - 2);
 		end
 	end
 
-	ChunkUtils:getChunkAndBlockPosition(globalPos, chunkPos, blockPos);
+	ChunkUtils:getChunkAndBlockPosition(pos, chunkPos, blockPos);
 	terrainId = world:getTerrainData(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x - 2, blockPos.y - 2, blockPos.z - 2);
 
-	while (terrainId == 0 or increment > precision) and globalPos.y < globalPosition.y + maxHeight and globalPos.y > globalPosition.y - maxHeight do
+	while (terrainId == 0 or increment > precision) and pos.y < y + maxHeight and pos.y > y - maxHeight do
 		if terrainId == 0 then
 			moveDown();
 		else
@@ -70,7 +72,7 @@ function findNearestTerrainFloor(globalPosition)
 		increment = increment / 2;
 	end
 
-	return globalPos, terrainId;
+	return pos, terrainId;
 end
 
 

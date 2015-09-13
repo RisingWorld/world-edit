@@ -48,9 +48,8 @@ Your final script folder should look somewhat like this
    ./listeners
       ./commandListener.lua
       ./playerListener.lua
-   ./string-ext
+   ./lua-ext
       ./string-ext.lua
-   ./table-ext
       ./table-ext.lua
    ./definition.xml
    ./blocks.lua
@@ -100,17 +99,24 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 * `place <blockType> id [north|east|south|west [sideway|flipped]]` : place a block with the given `id`, optionally facing the given direction and put `sideway` or `flipped`.  
   Ex: `/we place ramp 121 east flipped`
 
-* `plant <ranges> [-x=x] [-y=y] [-r=radius] [-c=count]` : plant vegetations (trees, flowers, etc.). The ranges determine the vegetation to plant.
+* `plant <areatype> <plants>` : plant vegetations (trees, flowers, etc.). 
+  * `<areatype>` may be one of the following :
+    * `single` plant a single plant right in front of the character.
+    * `line <distance> <count>` plant in a straight line to the nearest axis, up to `distance` blocks. The value `count` may be an absolute value or a percentage of the total `distance`.
+    * `free <distance> <count>` plant in the direction the character is facing, where `distance` and `count` are the same as for the above.
+    * `rect <ns> <ew> <count> [-b]` plant in a rectangle **around** the character (character at the very center of the area). Both `ns` and `ew` are mandatory and determine the total width of each side. The amount of vegetation planted is determined by `count` and may be an absolute value or a percentage of the rectangle area. Use the optional `-b` (border) flag to plant at the edge of the area only, and `count` will be the perimeter instead of the area.
+    * `circle <diameter> <count> [-b]` plant in a circle with the specified `diameter` around the character (character at the very center of the area). The amount of vegetation planted is determined by `count` and may be an absolute value or a percentage of the circle area. Use the `-b` (border) flag to plant at the edge of the area only, and `count` will be based on the circonference instead of the area.
+  * `<plants>` is a space delimited list of plants ids to plant. To specify a range of plants, use `..` between two numbers (no space). For example `1 2 3 4 7 9 10 11 12` is the same as `1..4 7 9..12`.
 
-  Ex: `/we plant 13..27` plant a single random flower
+  Ex: `/we plant single 13..27` plant a single random flower
 
-  Ex: `/we plant 29 -x=10 -c=10` plant 10 trees at random on a single straight line on the x-axis
+  Ex: `/we plant line 10 7 29` plant 7 trees at random on a single straight line of 10 blocks long, on the nearest axis, in front of the character
 
-  Ex: `/we plant 29 -y=10 -c=50%` plant 5 trees (50% of 10) at random on a single straight line on the y-axis
+  Ex: `/we plant free 10 50% 6` plant 5 pine trees (50% of 10) at random on a single straight line, 10 blocks long, facing and in front of the character.
 
-  Ex: `/we plant 29 -x=10 -y=10 -c=30` plant 30 trees at random in a rectangle area
+  Ex: `/we plant rect 30 10 100 2..4 6 7 -b` plant 100 trees at random around a perimeter of a rectangle of 30 blocks (north-south) by 10 blocks (east-west)
 
-  Ex: `/we plant 2..4 6 7 28..31 -r=10 -c=30%` plant random trees in a circle area filling 30% of it
+  Ex: `/we plant circle 20 30% 2 3 4` plant maple trees in a circle area with a diameter of 20 blocks filling it at 30%
 
 
 ### Textures

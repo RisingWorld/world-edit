@@ -1,6 +1,12 @@
 
 include("command-parser/parse-args.lua");
 
+-- set maximum number of plants to be planted at once
+local MAX_PLANTS_COUNT = 500;
+
+-- set maximum distance plants can be planted from character
+local MAX_PLANTS_DISTANCE = 64;
+
 
 local textureAliasMap = {
   grass9 = -10,
@@ -97,7 +103,7 @@ local function weHelp(event, args)
   elseif helpContext == "about" then
     weAbout(event);
   else
-    event.player:sendTextMessage("[#33FF33]/we <help|about|select|cancel|clear|fill|place> [args]");
+    event.player:sendTextMessage("[#33FF33]/we <help|about|select|cancel|clear|fill|place/plant> [args]");
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.usage", "/we help fill"));
   end
 end
@@ -199,91 +205,167 @@ end
 
 
 local function wePlant(event, args, flags)
-  local id;
   local ids = {};
-  local count, percent = string.match(flags["c"] or "1", "(%d+)(%%?)");
-  local plantPos = event.player:getPosition();
+  local total;
+  local count;
+  local originPos = event.player:getPosition();
+  local getPosition;
   local plantAngle;
-  local pos = Vector:createVector3f(0, 0, 0);
-  local terrainId;
+  local id, pos;
 
-  count = tonumber(count);
+  local function _scanIds(argIndex)
+    -- build ids table of all the possible ids to use
+    for i = argIndex, #args do
+      local id = args[i];
 
-  if count == nil then
+      -- TODO : check for alias range
+
+      local a, b = string.match(id, "(%d+)..(%d+)");
+
+      if a and b then
+        a = math.max(tonumber(a) or 1, 1);
+        b = math.min(tonumber(b) or 1, 41);
+
+        for i = a, b do
+          table.insert(ids, i);
+        end
+      else
+        id = tonumber(id);
+
+        if id == nil then
+          return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "range"));
+        end
+
+        table.insert(ids, math.max(math.min(id, 41), 1));
+      end
+    end
+  end
+
+  local function _count(argIndex, total)
+    local count, percent = string.match(args[argIndex], "(%d+)(%%?)");
+
+    if count == nil then
+      return nil;
+    elseif percent == "%" then
+      count = (count / 100) * total;
+    end
+
+    return math.min(math.ceil(count), MAX_PLANTS_COUNT);
+  end
+
+
+  if args[1] == "single" then
+    count = 1;
+    getPosition = function ()
+      local localPos = originPos:add(event.player:getViewDirection():setY(0):mult(1.5));
+      return localPos.x, localPos.y - 2, localPos.z;
+    end;
+
+    _scanIds(2);
+  elseif args[1] == "line" or args[1] == "free" then
+    local distance = math.min(tonumber(args[2]) or 1, MAX_PLANTS_DISTANCE);
+    local direction = event.player:getViewDirection():setY(0);
+
+    count = _count(3, distance);
+    getPosition = function ()
+      local localPos = originPos:add(direction:mult(math.random(1, distance)));
+      return localPos.x, localPos.y - 2, localPos.z;
+    end;
+
+    if args[1] == "free" then
+      -- TODO : lock direction
+    end
+
+    _scanIds(4);
+  elseif args[1] == "rect" then
+    local sizeX = math.min(tonumber(args[2]) or 1, MAX_PLANTS_DISTANCE);
+    local sizeZ = math.min(tonumber(args[3]) or 1, MAX_PLANTS_DISTANCE);
+
+    if flags["b"] then
+      count = _count(4, (sizeX * 2) + (sizeZ * 2));
+      getPosition = function ()
+        local x;
+        local y = originPos.y - 2;
+        local z;
+        local s = math.random(0, 19) % 4;
+
+        if s == 0 or s == 2 then
+          x = originPos.x + math.random(-math.floor(sizeX / 2), math.ceil(sizeX / 2));
+          if s == 0 then
+            z = originPos.z - sizeZ;
+          else
+            z = originPos.z + sizeZ;
+          end
+        else
+          if s == 1 then
+            x = originPos.x - sizeX;
+          else
+            x = originPos.x + sizeX;
+          end
+          z = originPos.z + math.random(-math.floor(sizeZ / 2), math.ceil(sizeZ / 2));
+        end
+
+        return x, y, z;
+      end;
+    else
+      count = _count(4, sizeX * sizeZ);
+      getPosition = function ()
+        local x = originPos.x + math.random(-math.floor(sizeX / 2), math.ceil(sizeX / 2));
+        local y = originPos.y - 2;
+        local z = originPos.z + math.random(-math.floor(sizeZ / 2), math.ceil(sizeZ / 2));
+
+        return x, y, z;
+      end;
+    end
+    _scanIds(5);
+  elseif args[1] == "circle" then
+    local radius = math.min((tonumber(args[2]) or 1) / 2, MAX_PLANTS_DISTANCE);
+
+    if flags["b"] then
+      count = _count(3, math.pi * radius * 2);
+      getPosition = function ()
+        local angle = (math.random(0, 359000) / 1000) * math.pi / 180;
+        local x = originPos.x + (radius * math.cos(angle));
+        local y = originPos.y - 2;
+        local z = originPos.z + (radius * math.sin(angle));
+
+        return x, y, z;
+      end;
+    else
+      count = _count(3, math.pi * radius * radius);
+      getPosition = function ()
+        local angle = (math.random(0, 359000) / 1000) * math.pi / 180;
+        local x = originPos.x + ((math.random(0, radius * 10000) / 10000) * math.cos(angle));
+        local y = originPos.y - 2;
+        local z = originPos.z + ((math.random(0, radius * 10000) / 10000) * math.sin(angle));
+
+        return x, y, z;
+      end;
+    end
+
+    _scanIds(4);
+  else
+    return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "areatype"));
+  end
+
+  if #ids == 0 then
+    return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.missing.arg", "plants"));
+  elseif count == nil then
     return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "c"));
   end
 
-  -- build ids table of all the possible ids to use
-  for key,id in pairs(args) do
-    -- TODO : check for alias range
+  for i = 1, count do
+    id = ids[math.random(1, #ids)];
+    plantAngle = math.random(0, 359000) / 1000;
+    pos = findNearestTerrainFloor(getPosition());
 
-    local a, b = string.match(id, "(%d+)..(%d+)");
+    --print("Planting #" .. i .. " / " .. count .. ": " .. id .. " @ " .. pos.x .. "," .. pos.y .. "," .. pos.z .. " : " .. plantAngle);
 
-    if a and b then
-      a = math.max(tonumber(a) or 1, 1);
-      b = math.min(tonumber(b) or 1, 41);
-
-      for i = a, b do
-        table.insert(ids, i);
-      end
-    else
-      id = tonumber(id);
-
-      if id == nil then
-        return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "range"));
-      end
-
-      table.insert(ids, math.max(math.min(id, 41), 1));
-    end
+    placeVegetation(pos.x, pos.y - (0.2 + (math.random(0, 20) / 100)), pos.z, plantAngle, id);
   end
 
-  -- we want a circle area
-  if flags["r"] then
-    local r = math.max(tonumber(flags["r"]) or 1, 1);
-
-    if percent == "%" then
-      count = (count / 100) * (math.pi * r * r);
-    end
-
-    for i = 1,count do
-      local angle = (math.random(0, 359000) / 1000) * math.pi / 180;
-
-      pos.x = plantPos.x + ((math.random(0, r * 10000) / 10000) * math.cos(angle));
-      pos.y = plantPos.y;
-      pos.z = plantPos.z + ((math.random(0, r * 10000) / 10000) * math.sin(angle));
-      plantAngle = math.random(0, 359000) / 1000;
-
-      id = ids[math.random(1, #ids)];
-      pos, terrainId = findNearestTerrainFloor(pos);
-
-      placeVegetation(pos.x, pos.y - (0.2 + (math.random(0, 20) / 100)), pos.z, plantAngle, id)
-    end
-
-  -- we want a rectangle area
-  else
-    local x = math.max((tonumber(flags["x"]) or 1) - 1, 0);
-    local z = math.max((tonumber(flags["z"]) or 1) - 1, 0);
-
-    if percent == "%" then
-      count = (count / 100) * (z > 1 and z * 2 or 1) * (x > 1 and x * 2 or 1);
-    end
-
-
-
-    for i = 1,count do
-      pos.x = plantPos.x + (math.random(-x * 10000, x * 10000) / 10000);
-      pos.y = plantPos.y;
-      pos.z = plantPos.z + (math.random(-z * 10000, z * 10000) / 10000);
-      plantAngle = math.random(0, 359000) / 1000;
-
-      id = ids[math.random(1, #ids)];
-      pos, terrainId = findNearestTerrainFloor(pos);
-
-      placeVegetation(pos.x, pos.y - (0.2 + (math.random(0, 20) / 100)), pos.z, plantAngle, id)
-    end
-
-  end
 end
+
 
 
 local function weFill(event, args, flags)
@@ -293,7 +375,7 @@ local function weFill(event, args, flags)
   if id then
 
     if not table.contains(textureAliasMap, id) then
-      print("Terrain id adjusted from "..id.." to "..textureAliasMap["air"]);
+      --print("Terrain id adjusted from "..id.." to "..textureAliasMap["air"]);
       id = textureAliasMap["air"];
     end;
 
