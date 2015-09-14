@@ -112,7 +112,7 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 
   Ex: `/we plant line 10 7 29` plant 7 trees at random on a single straight line of 10 blocks long, on the nearest axis, in front of the character
 
-  Ex: `/we plant freeline 10 50% 6` plant 5 pine trees (50% of 10) at random on a single straight line, 10 blocks long, facing and in front of the character.
+  Ex: `/we plant freeline 10 50% 6 -e` plant 5 pine trees (50% of 10) spaced evenly on a single straight line, 10 blocks long, facing and in front of the character.
 
   Ex: `/we plant rect 30 10 100 2..4 6 7 -b` plant 100 trees at random around a perimeter of a rectangle of 30 blocks (north-south) by 10 blocks (east-west)
 

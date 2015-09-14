@@ -268,10 +268,25 @@ local function wePlant(event, args, flags)
     local direction = event.player:getViewDirection():clone():setY(0);
 
     count = _count(3, distance);
-    getPosition = function ()
-      local localPos = originPos:add(direction:mult(math.random(1, distance * precision) / precision));
-      return localPos.x, localPos.y - 2, localPos.z;
-    end;
+
+    if flags["e"] then
+      local increment = distance / count;
+      local step = increment / 2;
+
+      --print("COUNT / DISTANCE = INCREMENT = ".. count .. " / " .. distance .. " = " .. increment);
+      getPosition = function ()
+        local localPos = originPos:add(direction:mult(step));
+
+        step = step + increment;
+
+        return localPos.x, localPos.y - 2, localPos.z;
+      end;
+    else
+      getPosition = function ()
+        local localPos = originPos:add(direction:mult(math.random(1, distance * precision) / precision));
+        return localPos.x, localPos.y - 2, localPos.z;
+      end;
+    end
 
     -- lock direction to nearest axis
     if args[1] == "line" then
