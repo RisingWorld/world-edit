@@ -97,7 +97,7 @@ local function weHelp(event, args)
     event.player:sendTextMessage("[#33FF33]"..i18n.t(event.player, "help.place.usage", "blocktype", table.concat(getBlockTypes(), ', ')));
   elseif helpContext == "plant" then
     --print("Showing /we place help");
-    event.player:sendTextMessage("[#33FF33]/we plant <ranges> [-x=?] [-z=?] [-r=?] [-c=?]");
+    event.player:sendTextMessage("[#33FF33]/we plant <areatype> <ids>");
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.plant.usage"));
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.plant.example"));
   elseif helpContext == "about" then
@@ -205,6 +205,7 @@ end
 
 
 local function wePlant(event, args, flags)
+  local precision = 10000;
   local ids = {};
   local total;
   local count;
@@ -262,24 +263,29 @@ local function wePlant(event, args, flags)
     end;
 
     _scanIds(2);
-  elseif args[1] == "line" or args[1] == "free" then
+  elseif args[1] == "line" or args[1] == "freeline" then
     local distance = math.min(tonumber(args[2]) or 1, MAX_PLANTS_DISTANCE);
-    local direction = event.player:getViewDirection():setY(0);
+    local direction = event.player:getViewDirection():clone():setY(0);
 
     count = _count(3, distance);
     getPosition = function ()
-      local localPos = originPos:add(direction:mult(math.random(1, distance)));
+      local localPos = originPos:add(direction:mult(math.random(1, distance * precision) / precision));
       return localPos.x, localPos.y - 2, localPos.z;
     end;
 
-    if args[1] == "free" then
-      -- TODO : lock direction
+    -- lock direction to nearest axis
+    if args[1] == "line" then
+      direction.x =  direction.x >= 0 and math.floor(direction.x + 0.5) or math.ceil(direction.x - 0.5);
+      direction.z =  direction.z >= 0 and math.floor(direction.z + 0.5) or math.ceil(direction.z - 0.5);
     end
+
+    print("Direction vector");
+    print(direction);
 
     _scanIds(4);
   elseif args[1] == "rect" then
-    local sizeX = math.min(tonumber(args[2]) or 1, MAX_PLANTS_DISTANCE);
-    local sizeZ = math.min(tonumber(args[3]) or 1, MAX_PLANTS_DISTANCE);
+    local sizeZ = math.min(tonumber(args[2]) or 1, MAX_PLANTS_DISTANCE);  -- north south
+    local sizeX = math.min(tonumber(args[3]) or 1, MAX_PLANTS_DISTANCE);  -- east west
 
     if flags["b"] then
       count = _count(4, (sizeX * 2) + (sizeZ * 2));
@@ -290,7 +296,7 @@ local function wePlant(event, args, flags)
         local s = math.random(0, 19) % 4;
 
         if s == 0 or s == 2 then
-          x = originPos.x + math.random(-math.floor(sizeX / 2), math.ceil(sizeX / 2));
+          x = originPos.x + math.random(-math.floor(sizeX / 2) * precision, math.ceil(sizeX / 2) * precision) / precision;
           if s == 0 then
             z = originPos.z - sizeZ;
           else
@@ -302,7 +308,7 @@ local function wePlant(event, args, flags)
           else
             x = originPos.x + sizeX;
           end
-          z = originPos.z + math.random(-math.floor(sizeZ / 2), math.ceil(sizeZ / 2));
+          z = originPos.z + math.random(-math.floor(sizeZ / 2) * precision, math.ceil(sizeZ / 2) * precision) / precision;
         end
 
         return x, y, z;
@@ -310,9 +316,9 @@ local function wePlant(event, args, flags)
     else
       count = _count(4, sizeX * sizeZ);
       getPosition = function ()
-        local x = originPos.x + math.random(-math.floor(sizeX / 2), math.ceil(sizeX / 2));
+        local x = originPos.x + math.random(-math.floor(sizeX / 2) * precision, math.ceil(sizeX / 2) * precision) / precision;
         local y = originPos.y - 2;
-        local z = originPos.z + math.random(-math.floor(sizeZ / 2), math.ceil(sizeZ / 2));
+        local z = originPos.z + math.random(-math.floor(sizeZ / 2) * precision, math.ceil(sizeZ / 2) * precision) / precision;
 
         return x, y, z;
       end;
@@ -324,7 +330,7 @@ local function wePlant(event, args, flags)
     if flags["b"] then
       count = _count(3, math.pi * radius * 2);
       getPosition = function ()
-        local angle = (math.random(0, 359000) / 1000) * math.pi / 180;
+        local angle = (math.random(0, 359 * precision) / precision) * math.pi / 180;
         local x = originPos.x + (radius * math.cos(angle));
         local y = originPos.y - 2;
         local z = originPos.z + (radius * math.sin(angle));
@@ -334,10 +340,10 @@ local function wePlant(event, args, flags)
     else
       count = _count(3, math.pi * radius * radius);
       getPosition = function ()
-        local angle = (math.random(0, 359000) / 1000) * math.pi / 180;
-        local x = originPos.x + ((math.random(0, radius * 10000) / 10000) * math.cos(angle));
+        local angle = (math.random(0, 359 * precision) / precision) * math.pi / 180;
+        local x = originPos.x + ((math.random(0, radius * precision) / precision) * math.cos(angle));
         local y = originPos.y - 2;
-        local z = originPos.z + ((math.random(0, radius * 10000) / 10000) * math.sin(angle));
+        local z = originPos.z + ((math.random(0, radius * precision) / precision) * math.sin(angle));
 
         return x, y, z;
       end;
@@ -351,12 +357,12 @@ local function wePlant(event, args, flags)
   if #ids == 0 then
     return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.missing.arg", "plants"));
   elseif count == nil then
-    return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "c"));
+    return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "count"));
   end
 
   for i = 1, count do
     id = ids[math.random(1, #ids)];
-    plantAngle = math.random(0, 359000) / 1000;
+    plantAngle = math.random(0, 359 * precision) / precision;
     pos = findNearestTerrainFloor(getPosition());
 
     --print("Planting #" .. i .. " / " .. count .. ": " .. id .. " @ " .. pos.x .. "," .. pos.y .. "," .. pos.z .. " : " .. plantAngle);

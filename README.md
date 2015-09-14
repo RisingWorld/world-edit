@@ -103,7 +103,7 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
   * `<areatype>` may be one of the following :
     * `single` plant a single plant right in front of the character.
     * `line <distance> <count>` plant in a straight line to the nearest axis, up to `distance` blocks. The value `count` may be an absolute value or a percentage of the total `distance`.
-    * `free <distance> <count>` plant in the direction the character is facing, where `distance` and `count` are the same as for the above.
+    * `freeline <distance> <count>` plant in the direction the character is facing, where `distance` and `count` are the same as for the above.
     * `rect <ns> <ew> <count> [-b]` plant in a rectangle **around** the character (character at the very center of the area). Both `ns` and `ew` are mandatory and determine the total width of each side. The amount of vegetation planted is determined by `count` and may be an absolute value or a percentage of the rectangle area. Use the optional `-b` (border) flag to plant at the edge of the area only, and `count` will be the perimeter instead of the area.
     * `circle <diameter> <count> [-b]` plant in a circle with the specified `diameter` around the character (character at the very center of the area). The amount of vegetation planted is determined by `count` and may be an absolute value or a percentage of the circle area. Use the `-b` (border) flag to plant at the edge of the area only, and `count` will be based on the circonference instead of the area.
   * `<plants>` is a space delimited list of plants ids to plant. To specify a range of plants, use `..` between two numbers (no space). For example `1 2 3 4 7 9 10 11 12` is the same as `1..4 7 9..12`.
@@ -112,7 +112,7 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 
   Ex: `/we plant line 10 7 29` plant 7 trees at random on a single straight line of 10 blocks long, on the nearest axis, in front of the character
 
-  Ex: `/we plant free 10 50% 6` plant 5 pine trees (50% of 10) at random on a single straight line, 10 blocks long, facing and in front of the character.
+  Ex: `/we plant freeline 10 50% 6` plant 5 pine trees (50% of 10) at random on a single straight line, 10 blocks long, facing and in front of the character.
 
   Ex: `/we plant rect 30 10 100 2..4 6 7 -b` plant 100 trees at random around a perimeter of a rectangle of 30 blocks (north-south) by 10 blocks (east-west)
 
