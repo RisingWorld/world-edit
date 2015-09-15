@@ -98,7 +98,7 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 
   Ex: `/we clear veg`
 
-* `paint <start|stop> <texture> [size] [height]` : paint the terrain as the player walks using the specified terrain and brush size (defaults to `1`) and height adjustement (defaults to `0`). (**Note**: the brush is square at the moment. And the terrain can only be raised.) Use `/we paint stop` to stop. It is possible to call `/we start ...` multiple times in a row, changing texture and brush size at will.
+* `paint <start|stop> <texture> [size] [height]` : paint the terrain as the player walks using the specified terrain and brush size (defaults to `1`) and height adjustement (defaults to `0`). (**Note**: the brush is square at the moment. And the terrain can only be raised.) Use `/we paint stop` to stop. It is possible to call `/we paint start ...` multiple times in a row, changing texture and brush size at will.
   
   Ex: `/we paint start 6 3` ... `/we paint stop`
 
