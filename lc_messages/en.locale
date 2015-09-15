@@ -12,11 +12,14 @@ cmd.use.args=Use one of the following arguments: %s
 select.start=Select the area to edit. Type "/we help" for help.
 select.cancelled=Selection cancelled.
 
+paint.start=Move around to paint %s. Type "/we paint stop" when done.
+
 help.usage=All commands can display help. Ex: %s
 help.select.usage=Select an area to edit.
 help.cancel.usage=Cancel any area selection in progress.
 help.clear.usage=Clear the selected area of [obj]ects, [con]structions, [veg]egations, [block], [all], or [abs]olutely everything.
 help.fill.usage=Fill the selected area with terrain or ore. Use -c to clear the area first. The available textures are: %s
 help.place.usage=Fill the selected area with blocks (the last two arguments are optional). %s should be one of : %s
+help.paint.usage=Paint the terrain below the character. Toggle with "start" then start walking! Use the optional size to set the brush size (default 1) and height adjustment (default 0). The available textures are: %s
 help.plant.usage=Plant vegetation in the given [areatype] where [ids] may be space-delimited list of numeric values or ranges from 1 to 41. Area types are : "single", "line <distance> <count> [-e]", "freeline <distance> <count> [-e]", "rect <sizeNS> <sizeEW> <count> [-b]", and "circle <diameter> <count> [-b]". Where <count> may be an absolute value or a percentage, the -e optional flag will plant evenly along the line, and the -b optional flag indicating to plant along the borders of the area.
 help.plant.example=Ex: "/we plant circle 20 60%% 1 8..10 13..27 -b" would plant shrubberies (ID 1), and flowers (IDs 8 to 10, 13 to 27), at 60%% of the circonference of a circle 20 blocks in diameter.

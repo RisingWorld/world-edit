@@ -12,11 +12,14 @@ cmd.use.args=Benutze einen der folgenden Parameter: %s
 select.start=Waehle den Bereich zum bearbeiten. Schreibe "/we help" fuer Hilfe.
 select.cancelled=Auswahl abgebrochen.
 
+paint.start=Move around to paint %s. Type "/we paint stop" when done.
+
 help.usage=Gebe den Parameter fuer die Hilfe mit an. Bsp: %s
 help.select.usage=Markiere den Bereich zum bearbeiten.
 help.cancel.usage=Aktuelle Auswahl abbrechen.
 help.clear.usage=Bereinigen der Auswahl von [obj]ects, [con]structions, [veg]egations, [block], [all], oder [abs]olutely everything.
 help.fill.usage=Fuellt die Auswahl mit Erde oder Stein. Verwenden -c, um den Bereich zuerst zu löschen. Die Texturen sind verfügbar: %s
 help.place.usage=Fuellt die Auswahl mit Bloecken (die letzten beiden Parameter sind optional). %s sollte sein : %s
+help.paint.usage=Paint the terrain below the character. Toggle with "start" then start walking! Use the optional size to set the brush size (default 1) and height adjustment (default 0). The available textures are: %s
 help.plant.usage=Plant vegetation in the given [areatype] where [ids] may be space-delimited list of numeric values or ranges from 1 to 41. Area types are : "single", "line <distance> <count> [-e]", "freeline <distance> <count> [-e]", "rect <sizeNS> <sizeEW> <count> [-b]", and "circle <diameter> <count> [-b]". Where <count> may be an absolute value or a percentage, the -e optional flag will plant evenly along the line, and the -b optional flag indicating to plant along the borders of the area.
 help.plant.example=Ex: "/we plant circle 20 60%% 1 8..10 13..27 -b" would plant shrubberies (ID 1), and flowers (IDs 8 to 10, 13 to 27), at 60%% of the circonference of a circle 20 blocks in diameter.

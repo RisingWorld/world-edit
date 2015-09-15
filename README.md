@@ -85,6 +85,7 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 ### Commands
 
 * `help [command]` : dipslay help. If `command` is specified, display help for that command.  
+
   Ex: `/we help fill`
 
 * `select` : start area selection  
@@ -94,9 +95,19 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
   Ex: `/we fill -c grass`
 
 * `clear [obj|con|veg|block|all|abs]` : clear the selected area of (obj)ects, (con)structions, (veg)etations, (block)s, (all), or (abs)olutely everything. (Default `all`)  
+
   Ex: `/we clear veg`
 
+* `paint <start|stop> <texture> [size] [height]` : paint the terrain as the player walks using the specified terrain and brush size (defaults to `1`) and height adjustement (defaults to `0`). (**Note**: the brush is square at the moment. And the terrain can only be raised.) Use `/we paint stop` to stop. It is possible to call `/we start ...` multiple times in a row, changing texture and brush size at will.
+  
+  Ex: `/we paint start 6 3` ... `/we paint stop`
+
+  Ex: `/we paint start 1` ... `/we paint stop`
+
+  Ex: `/we paint start 9 2 1` ... `/we paint stop`
+
 * `place <blockType> id [north|east|south|west [sideway|flipped]]` : place a block with the given `id`, optionally facing the given direction and put `sideway` or `flipped`.  
+
   Ex: `/we place ramp 121 east flipped`
 
 * `plant <areatype> <plants>` : plant vegetations (trees, flowers, etc.). 

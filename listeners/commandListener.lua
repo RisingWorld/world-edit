@@ -76,34 +76,31 @@ local function weHelp(event, args)
   local helpContext = string.lower(args[1] or "");
 
   if helpContext == "select" then
-    --print("Showing /we select help");
     event.player:sendTextMessage("[#33FF33]/we select");
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.select.usage"));
   elseif helpContext == "cancel" then
-    --print("Showing /we cancel help");
     event.player:sendTextMessage("[#33FF33]/we cancel");
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.cancel.usage"));
   elseif helpContext == "clear" then
-    --print("Showing /we clear help");
     event.player:sendTextMessage("[#33FF33]/we clear ["..table.concat(clearAvailableArgs, '|').."] [-p]");
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.clear.usage"));
   elseif helpContext == "fill" then
-    --print("Showing /we fill help");
     event.player:sendTextMessage("[#33FF33]/we fill <texture> [-p]");
-    event.player:sendTextMessage("[#33FF33]"..i18n.t(event.player, "help.fill.usage", table.concat(fillAvailableArgs, ', ')));
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.fill.usage", table.concat(fillAvailableArgs, ', ')));
+  elseif helpContext == "paint" then
+    event.player:sendTextMessage("[#33FF33]/we paint <start|stop> <texture> [size] [height]");
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.paint.usage", table.concat(fillAvailableArgs, ', ')));
   elseif helpContext == "place" then
-    --print("Showing /we place help");
     event.player:sendTextMessage("[#33FF33]/we place <blocktype> <id> [north|east|south|west] [sideway|flipped] [-p]");
-    event.player:sendTextMessage("[#33FF33]"..i18n.t(event.player, "help.place.usage", "blocktype", table.concat(getBlockTypes(), ', ')));
+    event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.place.usage", "blocktype", table.concat(getBlockTypes(), ', ')));
   elseif helpContext == "plant" then
-    --print("Showing /we place help");
     event.player:sendTextMessage("[#33FF33]/we plant <areatype> <ids>");
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.plant.usage"));
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.plant.example"));
   elseif helpContext == "about" then
     weAbout(event);
   else
-    event.player:sendTextMessage("[#33FF33]/we <help|about|select|cancel|clear|fill|place/plant> [args]");
+    event.player:sendTextMessage("[#33FF33]/we <about|help|select|cancel|clear|fill|paint|place|plant> [args]");
     event.player:sendTextMessage("[#FFFF00]"..i18n.t(event.player, "help.usage", "/we help fill"));
   end
 end
@@ -111,7 +108,6 @@ end
 
 local function weSelect(event)
   event.player:enableMarkingSelector(function()
-    --print("Area selection start");
     setLabel(event, i18n.t(event.player, "select.start"));
   end);
 end
@@ -122,7 +118,6 @@ local function weCancel(event)
     setLabel(event);
 
     if markingEvent ~= false then
-      --print("Area selection cancelled");
       event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "select.cancelled"));
     end
   end);
@@ -290,13 +285,22 @@ local function wePlant(event, args, flags)
 
     -- lock direction to nearest axis
     if args[1] == "line" then
-      direction.x =  direction.x >= 0 and math.floor(direction.x + 0.5) or math.ceil(direction.x - 0.5);
-      direction.z =  direction.z >= 0 and math.floor(direction.z + 0.5) or math.ceil(direction.z - 0.5);
+      if math.abs(direction.x) > math.abs(direction.z) then
+        if direction.x < 0 then
+          direction.x = -1;
+        else
+          direction.x = 1;
+        end
+        direction.z = 0;
+      else
+        direction.x = 0;
+        if direction.z < 0 then
+          direction.z = -1;
+        else
+          direction.z = 1;
+        end
+      end
     end
-
-    print("Direction vector");
-    print(direction);
-
     _scanIds(4);
   elseif args[1] == "rect" then
     local sizeZ = math.min(tonumber(args[2]) or 1, MAX_PLANTS_DISTANCE);  -- north south
@@ -388,7 +392,6 @@ local function wePlant(event, args, flags)
 end
 
 
-
 local function weFill(event, args, flags)
   local cleanup = flags["c"] or flags["clean"];
   local id = tonumber(args[1]) or textureAliasMap[string.lower(args[1] or "")];
@@ -424,6 +427,60 @@ local function weFill(event, args, flags)
 end
 
 
+local function wePaint(event, args, flags)
+  local cmd = args[1];
+
+  if cmd == "start" then
+    local id = tonumber(args[2]) or textureAliasMap[string.lower(args[2] or "")];
+    local brushSize = math.min(math.max(tonumber(args[3]) or 1, 1), 10);
+    local heightAdjust = math.min(math.max(tonumber(args[4]) or 0, 0), 16);
+
+    if id then
+      if id == 0 then
+        return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.invalid.arg", "texture"));
+      end
+
+      local textureName = id;
+      for key,texture in pairs(textureAliasMap) do
+        if texture == id then
+          textureName = key;
+        end
+      end
+
+      setLabel(event, i18n.t(event.player, "paint.start", textureName));
+      event.player:setAttribute("painting", {
+        id = id,
+        brushSize = brushSize,
+        height = heightAdjust
+      });
+    else
+      return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.use.args", table.concat(fillAvailableArgs, ', ')));
+    end
+  elseif cmd == "stop" then
+    setLabel(event);
+    event.player:setAttribute("painting", nil);
+    event.player:setAttribute("painting.brush.size", nil);
+  else
+    return event.player:sendTextMessage("[#FF0000]"..i18n.t(event.player, "cmd.missing.arg", "start|stop"));
+  end
+end
+
+local function wePaintProcess(event)
+  local paint = event.player:getAttribute("painting");
+  local playerPos = event.player:getPosition();
+  local pos, terrainId = findNearestTerrainFloor(playerPos.x, playerPos.y, playerPos.z);
+
+  if terrainId ~= paint.id then
+    local startPos = Vector:createVector3f(pos.x - paint.brushSize, pos.y + paint.height, pos.z - paint.brushSize);
+    local endPos = Vector:createVector3f(pos.x + paint.brushSize, pos.y - 3, pos.z + paint.brushSize);
+
+    fillTerrainGlobal(startPos, endPos, paint.id);
+    --fillTerrainRadiusGlobal(pos, size, id);  -- creates a bubble/hill... not good...
+  end
+end
+
+
+
 local function onPlayerCommand(event)
   local args, flags = parseArgs(event.command);
   local cmd;
@@ -446,6 +503,8 @@ local function onPlayerCommand(event)
         if checkPlayerAccess(event.player, "clear") then weClear(event, table.slice(args, 3), flags); end;
       elseif cmd == "fill" then
         if checkPlayerAccess(event.player, "fill") then weFill(event, table.slice(args, 3), flags); end;
+      elseif cmd == "paint" then
+        if checkPlayerAccess(event.player, "paint") then wePaint(event, table.slice(args, 3), flags); end;
       elseif cmd == "place" then
         if checkPlayerAccess(event.player, "place") then wePlaceBlock(event, table.slice(args, 3), flags); end;
       elseif cmd == "plant" then
@@ -459,3 +518,11 @@ local function onPlayerCommand(event)
   end
 end
 addEvent("PlayerCommand", onPlayerCommand);
+
+
+local function onPlayerChangePosition(event)
+  if event.player:getAttribute("painting") then
+    wePaintProcess(event);
+  end
+end
+addEvent("PlayerChangePosition", onPlayerChangePosition);

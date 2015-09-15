@@ -97,28 +97,6 @@ local function findTerrainData(globalPosition)
 end
 
 -- NOTE: NOT USED.... YET!
-local function fillTerrainGlobal(s, e, terrainId)
-	local startChunkPos = Vector:createVector3f(0.0, 0.0, 0.0);
-	local startBlockPos = Vector:createVector3f(0.0, 0.0, 0.0);
-	local endChunkPos = Vector:createVector3f(0.0, 0.0, 0.0);
-	local endBlockPos = Vector:createVector3f(0.0, 0.0, 0.0);
-
-	-- convert into chunk + block positions
-	ChunkUtils:getChunkAndBlockPosition(s, startChunkPos, startBlockPos);
-	ChunkUtils:getChunkAndBlockPosition(e, endChunkPos, endBlockPos);
-
-	world:setTerrainDataInArea(
-		startChunkPos.x, startChunkPos.y, startChunkPos.z,
-		startBlockPos.x, startBlockPos.y, startBlockPos.z,
-
-		endChunkPos.x, endChunkPos.y, endChunkPos.z,
-		endBlockPos.x, endBlockPos.y, endBlockPos.z,
-
-		terrainId
-	);
-end
-
--- NOTE: NOT USED.... YET!
 local function getWorldData(globalPosition)
 	local chunkPos = Vector:createVector3i(0, 0, 0);
 	local blockPos = Vector:createVector3i(0, 0, 0);
@@ -142,6 +120,36 @@ function fillTerrain(e, terrainId)
 
 		terrainId
 	);
+end
+
+function fillTerrainGlobal(s, e, terrainId)
+	local startChunkPos = Vector:createVector3i(0, 0, 0);
+	local startBlockPos = Vector:createVector3i(0, 0, 0);
+	local endChunkPos = Vector:createVector3i(0, 0, 0);
+	local endBlockPos = Vector:createVector3i(0, 0, 0);
+
+	-- convert into chunk + block positions
+	ChunkUtils:getChunkAndBlockPosition(s, startChunkPos, startBlockPos);
+	ChunkUtils:getChunkAndBlockPosition(e, endChunkPos, endBlockPos);
+
+	world:setTerrainDataInArea(
+		startChunkPos.x, startChunkPos.y, startChunkPos.z,
+		startBlockPos.x - 2, startBlockPos.y - 2, startBlockPos.z - 2,
+
+		endChunkPos.x, endChunkPos.y, endChunkPos.z,
+		endBlockPos.x - 2, endBlockPos.y - 2, endBlockPos.z - 2,
+
+		terrainId
+	);
+end
+
+function fillTerrainRadiusGlobal(s, radius, terrainId)
+	local chunkPos = Vector:createVector3i(0, 0, 0);
+	local blockPos = Vector:createVector3i(0, 0, 0);
+
+	ChunkUtils:getChunkAndBlockPosition(s, chunkPos, blockPos);
+
+	world:setTerrainDataInRadius(chunkPos.x, chunkPos.y, chunkPos.z, blockPos.x - 2, blockPos.y - 2, blockPos.z - 2, radius, terrainId);
 end
 
 
