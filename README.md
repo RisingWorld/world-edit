@@ -30,9 +30,7 @@ Download the Zip file for the [i18n](https://github.com/RisingWorld/i18n/archive
 
 Download the Zip file for the [command parser](https://github.com/RisingWorld/command-parser/archive/master.zip) sub-module, and extract it inside the `command-parser` folder of this script.
 
-Download the Zip file for the [table-ext](https://github.com/RisingWorld/table-ext/archive/master.zip) sub-module, and extract it inside the `table-ext` folder of this script.
-
-Download the Zip file for the [string-ext](https://github.com/RisingWorld/string-ext/archive/master.zip) sub-module, and extract it inside the `string-ext` folder of this script.
+Download the Zip file for the [lua-ext](https://github.com/RisingWorld/lua-ext/archive/master.zip) sub-module, and extract it inside the `lua-ext` folder of this script.
 
 Your final script folder should look somewhat like this
 
@@ -106,7 +104,7 @@ In-game, in chat, type `/we <command>` where `<command>` is one of the following
 
   Ex: `/we paint start 9 2 1` ... `/we paint stop`
 
-* `place <blockType> id [north|east|south|west [sideway|flipped]]` : place a block with the given `id`, optionally facing the given direction and put `sideway` or `flipped`.  
+* `place <blockType> <id> [north|east|south|west [sideway|flipped]]` : place a block with the given `id`, optionally facing the given direction and put `sideway` or `flipped`.  
 
   Ex: `/we place ramp 121 east flipped`
 
