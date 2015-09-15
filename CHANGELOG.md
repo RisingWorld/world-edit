@@ -1,3 +1,9 @@
+## 2015-06-15
+
+* Fixed minor issues with /we plant line
+* Cleaned some code (removed useless commented code)
+* Implemented /we paint
+
 ## 2015-09-13
 
 * Implemented `/we plant`
